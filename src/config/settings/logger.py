@@ -8,7 +8,8 @@ from src.config.env import env
 environment = env('ENVIRONMENT')
 
 # Ensure the directory exists
-log_file_path = env("DJANGO_LOG_FILE", default="/vol/web/logs/logfile.log")
+log_file_path = os.path.expanduser(env("DJANGO_LOG_FILE", default="/vol/web/logs/logfile.log"))
+
 os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
 
 
@@ -110,7 +111,11 @@ def logger_config() -> None:
                 "src.hr_management_system": {
                     "level": "DEBUG" if environment == "development" else "INFO",
                     "handlers": ["console", "file"],
-                }
+                },
+                "mongodb": {
+                    "level": "WARNING",
+                    "handlers": ["console", "file"],
+                },
             },
         }
     )
