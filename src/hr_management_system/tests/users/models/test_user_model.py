@@ -3,8 +3,6 @@ from django_mongoengine.mongo_auth.managers import get_user_document
 from mongoengine.errors import NotUniqueError, ValidationError
 
 
-pytestmark = pytest.mark.django_db
-
 User = get_user_document()
 
 
