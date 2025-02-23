@@ -1,7 +1,7 @@
 from typing import Dict
 
 from django_mongoengine.mongo_auth.managers import get_user_document
-from factory import PostGenerationMethodCall, Sequence
+from factory import Sequence
 from factory.mongoengine import MongoEngineFactory
 
 
@@ -31,9 +31,7 @@ class BaseUserFactory(MongoEngineFactory):
         lambda instance_num: f'test_user_{instance_num}'
     )
 
-    password = PostGenerationMethodCall(
-        'set_password', 'Test_passw0rd'
-    )
+    password = 'Test_passw0rd'
 
     is_verified = True  # Default to a verified user for convenience
     is_active = True  # Default to activate user for convenience

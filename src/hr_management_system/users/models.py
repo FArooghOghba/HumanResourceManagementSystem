@@ -85,9 +85,10 @@ class BaseUser(AbstractUser, BaseModel):
         return user
 
     meta = {
-        'indexes': [{"fields": ["username", "email"], "unique": True}],
+        'indexes': [
+            {'fields': ['email'], 'unique': True},
+        ],
         'app_label': 'users',  # Ensures Django registers this model under the 'users' app
-
     }
 
     def __str__(self) -> str:

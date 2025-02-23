@@ -110,7 +110,7 @@ def test_create_user_without_username_raises_error() -> None:
         )
 
 
-def test_create_user_with_existed_email_return_error():
+def test_create_user_with_existed_email_return_error(first_test_user: 'User') -> None:
 
     """
     Test that creating a user with an already existing email raises
@@ -121,18 +121,18 @@ def test_create_user_with_existed_email_return_error():
         duplicate user with the same email.
     """
 
-    email = 'test@example.com'
-    User.create_user(email=email, username='first_test_user', password='test')
+    existed_email = first_test_user.email
 
     with pytest.raises(NotUniqueError):
         User.create_user(
-            email=email,
+            email=existed_email,
             username='first_test_user',
             password='test'
         )
 
 
-def test_create_user_with_existed_username_return_error():
+
+def test_create_user_with_existed_username_return_error(first_test_user: 'User') -> None:
 
     """
     Test that creating a user with an already existing username
@@ -143,13 +143,12 @@ def test_create_user_with_existed_username_return_error():
         a duplicate user with the same username.
     """
 
-    username = 'first_test_user'
-    User.create_user(email='test@example.com', username=username, password='test')
+    existed_username = first_test_user.username
 
     with pytest.raises(NotUniqueError):
         User.create_user(
             email='test2@example.com',
-            username=username,
+            username=existed_username,
             password='test'
         )
 
