@@ -22,3 +22,15 @@ def first_test_department() -> 'Department':
 
     return DepartmentFactory()
 
+
+@pytest.fixture
+def first_test_position():
+
+    """
+    Fixture to create and return a test Position instance using PositionFactory.
+
+    Returns:
+        Position: A Position instance with generated values.
+    """
+
+    return PositionFactory()
