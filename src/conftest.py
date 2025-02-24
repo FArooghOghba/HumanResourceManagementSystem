@@ -7,6 +7,8 @@ from mongoengine.connection import get_db
 from rest_framework.test import APIClient, APIRequestFactory
 
 from src.hr_management_system.departments.models import Position
+from src.hr_management_system.employees.models import Employee
+
 
 User = get_user_document()
 
@@ -30,6 +32,7 @@ def clean_db() -> Generator[None, Any, None]:
     # Recreate indexes after cleanup
     User.ensure_indexes()
     Position.ensure_indexes()
+    Employee.ensure_indexes()
     yield
 
 
@@ -82,3 +85,4 @@ def time_tracker() -> Generator[None, None, None]:
 
 from src.hr_management_system.tests.fixtures.user_fixtures import *  # noqa
 from src.hr_management_system.tests.fixtures.department_fixtures import *  # noqa
+from src.hr_management_system.tests.fixtures.employee_fixtures import *  # noqa
