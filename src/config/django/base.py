@@ -20,6 +20,7 @@ LOCAL_APPS = [
     'src.hr_management_system.common.apps.CommonConfig',
     'src.hr_management_system.users.apps.UsersConfig',
     'src.hr_management_system.departments.apps.DepartmentsConfig',
+    'src.hr_management_system.employees.apps.EmployeesConfig',
 ]
 
 THIRD_PARTY_APPS = [
