@@ -20,7 +20,7 @@ class DepartmentFactory(MongoEngineFactory):
         model = Department
 
     code = fuzzy.FuzzyText(
-        length=5, prefix="DEPT-", chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-"
+        length=5, prefix="DE-", chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-"
     )
     name = factory.Faker("word", locale="en_US")
     headcount = 0

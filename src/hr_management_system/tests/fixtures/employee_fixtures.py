@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import Dict, TYPE_CHECKING
 
 import pytest
 
@@ -18,3 +18,20 @@ def first_test_employee() -> "Employee":
 def second_test_employee() -> "Employee":
     """Fixture to create a test Employee instance linked to a position."""
     return EmployeeFactory()
+
+
+@pytest.fixture
+def first_test_employee_payload() -> Dict[str, str]:
+
+    """
+    Fixture for creating a test employee instance.
+
+    This fixture uses the `EmployeeFactory` factory
+    to create a test employee instance. The created employee
+    can be used in tests to simulate a employee with predefined
+    attributes for testing various scenarios.
+
+    :return: a dict test employee payload
+    """
+
+    return EmployeeFactory.create_payload()
