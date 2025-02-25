@@ -1,5 +1,7 @@
 import os
 
+from mongoengine import connect
+
 from src.config.env import BASE_DIR, env
 
 
@@ -91,7 +93,6 @@ MONGODB_DATABASES = {
     }
 }
 
-from mongoengine import connect
 connect(
     db=env('MONGO_DB', default='hrms'),
     host=env('MONGO_URI', default='mongodb://localhost:27017/'),
