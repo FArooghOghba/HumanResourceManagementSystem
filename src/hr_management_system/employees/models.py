@@ -4,6 +4,7 @@ from typing import Optional
 from django.utils import timezone
 from mongoengine import DENY, EmbeddedDocument
 from mongoengine import fields
+from mongoengine.connection import get_db
 from mongoengine.errors import ValidationError
 
 from src.hr_management_system.common.models import BaseModel
@@ -93,19 +94,15 @@ class Employee(BaseModel):
         child_number (int): Number of children.
     """
 
-    employment_id = fields.SequenceField(
-        sequence_name="emp_id",
-        default=1000,
-        required=True
-    )
+    employment_id = fields.IntField(unique=True, required=True)
     user = fields.ReferenceField(
         document_type='users.BaseUser', required=True, unique=True, reverse_delete_rule=DENY
     )
-    gender = fields.EnumField(
-        enum=GenderStatusChoices,
-        required=True
-    )
-    position = fields.ReferenceField(document_type='departments.Position', reverse_delete_rule=DENY)
+    # gender = fields.EnumField(
+    #     enum=GenderStatusChoices,
+    #     required=True
+    # )
+    # position = fields.ReferenceField(document_type='departments.Position', reverse_delete_rule=DENY)
     employment_start_date = fields.DateTimeField(default=timezone.now, required=True)
     employment_end_date = fields.DateTimeField()
     employment_status = fields.EnumField(
@@ -122,10 +119,10 @@ class Employee(BaseModel):
     )
     birthdate = fields.DateField(required=True)
     father_name = fields.StringField(max_length=200)
-    military_status = fields.EmbeddedDocumentField(MilitaryStatus, required=True)
-    degree_status = fields.EmbeddedDocumentField(DegreeStatus, required=True)
-
-    marital_status = fields.EmbeddedDocumentField(MaritalStatus, required=True)
+    # military_status = fields.EmbeddedDocumentField(MilitaryStatus, required=True)
+    # degree_status = fields.EmbeddedDocumentField(DegreeStatus, required=True)
+    #
+    # marital_status = fields.EmbeddedDocumentField(MaritalStatus, required=True)
     child_number = fields.IntField(min_value=0, default=0)
 
     meta = {
@@ -133,7 +130,7 @@ class Employee(BaseModel):
         'indexes': [
             {'fields': ['employment_id'], 'unique': True},
             {'fields': ['user'], 'unique': True},
-            {'fields': ['position']},
+            # {'fields': ['position']},
             {'fields': ['birthdate']},
             {'fields': ['employment_start_date', 'employment_end_date']},
             {'fields': ['phone'], 'unique': True},
@@ -144,17 +141,24 @@ class Employee(BaseModel):
     }
 
 
-    @property
-    def department(self) -> Optional['Department']:
+    # @property
+    # def department(self) -> Optional['Department']:
+    #
+    #     """
+    #     Derived property to obtain the department from the employee's position.
+    #
+    #     Returns:
+    #         The Department associated with the employee's position.
+    #     """
+    #
+    #     return self.position.department
 
-        """
-        Derived property to obtain the department from the employee's position.
-
-        Returns:
-            The Department associated with the employee's position.
-        """
-
-        return self.position.department
+    def save(self, *args, **kwargs):
+        if not self.employment_id:
+            # Get and increment the max ID atomically
+            max_id = Employee.objects.order_by('-employment_id').first()
+            self.employment_id = (max_id.employment_id + 1) if max_id else 1000
+        return super().save(*args, **kwargs)
 
     def clean(self) -> None:
 
@@ -168,10 +172,10 @@ class Employee(BaseModel):
         Raises:
             ValidationError: If any validation check fails.
         """
-
-        # Prevent position department mismatch
-        if hasattr(self, 'position') and self.position.department != self.department:
-            raise ValidationError("Employee position must match derived department")
+        #
+        # # Prevent position department mismatch
+        # if hasattr(self, 'position') and self.position.department != self.department:
+        #     raise ValidationError("Employee position must match derived department")
 
         # Validate employment dates
         if self.employment_end_date and self.employment_end_date < self.employment_start_date:
@@ -189,6 +193,6 @@ class Employee(BaseModel):
         Returns:
             str: The full name from the associated user and the position title.
         """
-        return f"{self.user.get_full_name()} ({self.position.title})"
+        return f"{self.user.get_full_name()}"
 
 
