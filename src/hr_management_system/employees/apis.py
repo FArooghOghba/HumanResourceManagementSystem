@@ -5,9 +5,10 @@ from rest_framework.views import APIView
 
 from src.hr_management_system.employees.serializers import InputEmployeeSerializer, OutputEmployeeSerializer
 from src.hr_management_system.employees.services import create_employee
+from src.hr_management_system.users.selectors import get_employees
 
 
-class EmployeeAPIView(APIView):
+class EmployeeDetailAPIView(APIView):
 
     """
     API View to create an Employee.
@@ -52,3 +53,28 @@ class EmployeeAPIView(APIView):
         # Serialize the created employee using output serializer
         output_serializer = self.output_serializer(employee)
         return Response(data=output_serializer.data, status=status.HTTP_201_CREATED)
+
+
+class EmployeeListAPIView(APIView):
+
+    """
+    API View to create an Employee.
+
+    The HR manager provides employee data via the input serializer.
+    The view first creates a user using the user service, then creates an employee.
+    """
+
+    output_serializer = OutputEmployeeSerializer
+
+    @extend_schema(
+        responses=OutputEmployeeSerializer
+    )
+    def get(self, request, *args, **kwargs):
+
+        try:
+            employees = get_employees()
+        except Exception as e:
+            return Response(data={"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        output_serializer = self.output_serializer(employees, many=True)
+        return Response(data=output_serializer.data, status=status.HTTP_200_OK)

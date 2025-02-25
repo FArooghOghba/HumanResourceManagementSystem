@@ -1,11 +1,12 @@
 from django.urls import path
 
-from src.hr_management_system.employees.views import EmployeeAPIView
+from src.hr_management_system.employees.apis import EmployeeDetailAPIView, EmployeeListAPIView
 
 
 app_label = 'employees'
 
 
 urlpatterns = [
-    path(route='detail/', view=EmployeeAPIView.as_view(), name='create'),
+    path(route='', view=EmployeeListAPIView.as_view(), name='list'),
+    path(route='detail/', view=EmployeeDetailAPIView.as_view(), name='create'),
 ]
