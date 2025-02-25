@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 
 from src.hr_management_system.employees.serializers import InputEmployeeSerializer, OutputEmployeeSerializer
 from src.hr_management_system.employees.services import create_employee
-from src.hr_management_system.users.selectors import get_employees
+from src.hr_management_system.employees.selectors import get_employees
 
 
 class EmployeeDetailAPIView(APIView):
