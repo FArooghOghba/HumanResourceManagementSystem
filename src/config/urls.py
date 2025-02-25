@@ -24,7 +24,8 @@ urlpatterns = [
       name="redoc"
     ),
     path(route='admin/', view=admin.site.urls),
-    path(route='api/', view=include(('src.hr_management_system.api.urls', 'api'))),
+    # path(route='api/', view=include(('src.hr_management_system.api.urls', 'api'))),
+    path('employees/', view=include(('src.hr_management_system.employees.urls', 'employees')))
 ]
 
 
