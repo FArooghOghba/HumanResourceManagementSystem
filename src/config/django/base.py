@@ -77,24 +77,26 @@ WSGI_APPLICATION = 'src.config.wsgi.application'
 
 # Database
 
-# Disable Django's SQL Database
-DATABASES = {
+# MongoDB Configuration
+# MongoDB Configuration for django-mongoengine:
+
+MONGODB_DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.dummy',
+        'ENGINE': 'django_mongoengine.mongoengine',  # Official MongoEngine Django integration
+        'NAME': env('MONGO_DB', default='hrms'),
+        'CLIENT': {
+            'host': env('MONGO_URI', default='mongodb://localhost:27017/'),
+            'authSource': env('MONGO_AUTH_SOURCE', default='admin'),
+        }
     }
 }
 
-# MongoDB Configuration
-# MongoDB Configuration for django-mongoengine:
-MONGODB_DATABASES = {
-    'default': {
-        'name': env('MONGO_DB', default='hrms'),
-        'host': env('MONGO_URI', default='mongodb://localhost:27017/'),
-        'username': env('MONGO_USER', default=''),
-        'password': env('MONGO_PASSWORD', default=''),
-        'authentication_source': env('MONGO_AUTH_SOURCE', default='admin'),
-    }
-}
+from mongoengine import connect
+connect(
+    db=env('MONGO_DB', default='hrms'),
+    host=env('MONGO_URI', default='mongodb://localhost:27017/'),
+    authentication_source=env('MONGO_AUTH_SOURCE', default='admin')
+)
 
 # File Storage Configuration
 DEFAULT_FILE_STORAGE = 'django_mongoengine.storage.GridFSStorage'
@@ -159,6 +161,6 @@ if not DEBUG:
 from src.config.settings.rest_framework import *  # noqa
 from src.config.settings.cors import *  # noqa
 from src.config.settings.jwt import *  # noqa
-from src.config.settings.sessions import *  # noqa
+# from src.config.settings.sessions import *  # noqa
 from src.config.settings.swagger import *  # noqa
 from src.config.settings.logger import *  # noqa
