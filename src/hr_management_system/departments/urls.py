@@ -1,6 +1,9 @@
 from django.urls import path
 
-from src.hr_management_system.departments.apis import DepartmentDetailAPIView, DepartmentListAPIView
+from src.hr_management_system.departments.apis import (
+    DepartmentDetailAPIView, DepartmentListAPIView,
+    PositionDetailAPIView
+)
 
 
 app_label = 'departments'
@@ -8,5 +11,6 @@ app_label = 'departments'
 
 urlpatterns = [
     path(route='', view=DepartmentListAPIView.as_view(), name='list'),
-    path(route='detail/', view=DepartmentDetailAPIView.as_view(), name='create'),
+    path(route='detail/', view=DepartmentDetailAPIView.as_view(), name='detail'),
+    path(route='position/detail/', view=PositionDetailAPIView.as_view(), name='positions-detail'),
 ]
