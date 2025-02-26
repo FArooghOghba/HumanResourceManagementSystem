@@ -102,7 +102,7 @@ class Employee(BaseModel):
     #     enum=GenderStatusChoices,
     #     required=True
     # )
-    # position = fields.ReferenceField(document_type='departments.Position', reverse_delete_rule=DENY)
+    position = fields.ReferenceField(document_type='departments.Position', reverse_delete_rule=DENY)
     employment_start_date = fields.DateTimeField(default=timezone.now, required=True)
     employment_end_date = fields.DateTimeField()
     employment_status = fields.EnumField(
@@ -130,7 +130,7 @@ class Employee(BaseModel):
         'indexes': [
             {'fields': ['employment_id'], 'unique': True},
             {'fields': ['user'], 'unique': True},
-            # {'fields': ['position']},
+            {'fields': ['position']},
             {'fields': ['birthdate']},
             {'fields': ['employment_start_date', 'employment_end_date']},
             {'fields': ['phone'], 'unique': True},

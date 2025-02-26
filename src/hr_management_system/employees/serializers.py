@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from src.hr_management_system.departments.serializers import OutputPositionSerializer
 from src.hr_management_system.employees.models import Employee, GenderStatusChoices
 from src.hr_management_system.departments.models import Position
 from src.hr_management_system.users.serializers import OutputUserSerializer
@@ -15,7 +16,7 @@ class InputEmployeeSerializer(serializers.Serializer):
     first_name = serializers.CharField(max_length=150)
     last_name = serializers.CharField(max_length=150)
     # gender = serializers.ChoiceField(choices=GenderStatusChoices)
-    # position = serializers.PrimaryKeyRelatedField(queryset=Position.objects.all())
+    position_title = serializers.CharField(max_length=100)
     employment_start_date = serializers.DateTimeField()
     phone = serializers.CharField()
     birthdate = serializers.DateField()
@@ -42,6 +43,7 @@ class OutputEmployeeSerializer(serializers.Serializer):
     birthdate = serializers.DateField(read_only=True)
     father_name = serializers.CharField(read_only=True)
     child_number = serializers.IntegerField(read_only=True)
+    position = OutputPositionSerializer(read_only=True)
 
     def to_representation(self, instance):
         data = super().to_representation(instance)

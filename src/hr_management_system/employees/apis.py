@@ -32,21 +32,7 @@ class EmployeeDetailAPIView(APIView):
         data = serializer.validated_data
         try:
             # Call the employee creation service
-            employee = create_employee(
-                email=data['email'],
-                first_name=data['first_name'],
-                last_name=data['last_name'],
-                # gender=data['gender'],
-                # position=data['position'],
-                employment_start_date=data['employment_start_date'],
-                phone=data['phone'],
-                birthdate=data['birthdate'],
-                father_name=data['father_name'],
-                # military_status=data['military_status'],
-                # degree_status=data['degree_status'],
-                # marital_status=data['marital_status'],
-                child_number=data.get('child_number', 0)
-            )
+            employee = create_employee(employee_data=data)
         except Exception as e:
             return Response(data={"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
