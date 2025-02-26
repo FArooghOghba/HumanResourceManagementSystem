@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from src.hr_management_system.departments.selectors import get_departments
+from src.hr_management_system.departments.selectors import get_departments, get_positions
 from src.hr_management_system.departments.serializers import (
     InputDepartmentSerializer, InputPositionSerializer,
     OutputDepartmentSerializer, OutputPositionSerializer
@@ -87,3 +87,25 @@ class PositionDetailAPIView(APIView):
         # Serialize the created employee using output serializer
         output_serializer = self.output_serializer(position)
         return Response(data=output_serializer.data, status=status.HTTP_201_CREATED)
+
+
+class PositionListAPIView(APIView):
+
+    """
+
+    """
+
+    output_serializer = OutputPositionSerializer
+
+    @extend_schema(
+        responses=OutputPositionSerializer
+    )
+    def get(self, request, *args, **kwargs):
+
+        try:
+            positions = get_positions()
+        except Exception as e:
+            return Response(data={"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        output_serializer = self.output_serializer(positions, many=True)
+        return Response(data=output_serializer.data, status=status.HTTP_200_OK)
