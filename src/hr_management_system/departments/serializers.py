@@ -1,15 +1,27 @@
 from rest_framework import serializers
 
+from src.hr_management_system.common.serializers import MongoModelSerializer
+from src.hr_management_system.departments.models import Department
+
 
 class InputDepartmentSerializer(serializers.Serializer):
+
+    """
+    Serializer for input data when creating or updating a Department.
+    """
+
     code = serializers.CharField(max_length=10)
     name = serializers.CharField(max_length=100)
 
 
-class OutputDepartmentSerializer(serializers.Serializer):
-    code = serializers.CharField(max_length=10)
-    name = serializers.CharField(max_length=100)
-    headcount = serializers.IntegerField()
+class OutputDepartmentSerializer(MongoModelSerializer):
+
+    """
+    Serializer for output representation of a Department.
+    """
+
+    class Meta:
+        model = Department
 
 
 class InputPositionSerializer(serializers.Serializer):

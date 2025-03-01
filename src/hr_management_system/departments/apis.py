@@ -14,7 +14,7 @@ from src.hr_management_system.departments.services import create_department, cre
 class DepartmentDetailAPIView(APIView):
 
     """
-
+    API view for creating a new Department.
     """
 
     input_serializer = InputDepartmentSerializer
@@ -23,7 +23,18 @@ class DepartmentDetailAPIView(APIView):
     @extend_schema(
         request=InputDepartmentSerializer, responses=OutputDepartmentSerializer
     )
-    def post(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs) -> 'Response':
+
+        """
+        Handle POST requests to create a Department.
+
+        Args:
+            request: The HTTP request containing department data.
+
+        Returns:
+            Response: An HTTP response containing the serialized Department data
+                with a 201 status code, or an error message with a 400 status code.
+        """
 
         serializer = self.input_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -42,15 +53,25 @@ class DepartmentDetailAPIView(APIView):
 class DepartmentListAPIView(APIView):
 
     """
-
+    API view for listing all Departments.
     """
-
     output_serializer = OutputDepartmentSerializer
 
     @extend_schema(
         responses=OutputDepartmentSerializer
     )
-    def get(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs) -> 'Response':
+
+        """
+        Handle GET requests to retrieve a list of Departments.
+
+        Args:
+            request: The HTTP request.
+
+        Returns:
+            Response: An HTTP response containing a list of serialized Departments
+                with a 200 status code, or an error message with a 400 status code.
+        """
 
         try:
             departments = get_departments()

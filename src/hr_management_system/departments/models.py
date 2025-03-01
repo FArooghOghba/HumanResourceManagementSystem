@@ -60,19 +60,19 @@ class Department(BaseModel):
         'ordering': ['code'],
     }
 
-    def clean(self) -> None:
-
-        """
-        Custom clean method for additional validation.
-
-        This method currently calls the superclass clean() method.
-        You may add custom validations (e.g., for the manager field) here.
-
-        Raises:
-            ValidationError: If any custom validation fails.
-        """
-
-        super().clean()
+    # def clean(self) -> None:
+    #
+    #     """
+    #     Custom clean method for additional validation.
+    #
+    #     This method currently calls the superclass clean() method.
+    #     You may add custom validations (e.g., for the manager field) here.
+    #
+    #     Raises:
+    #         ValidationError: If any custom validation fails.
+    #     """
+    #
+    #     super().clean()
 
         # Manager validation
         # if self.manager:

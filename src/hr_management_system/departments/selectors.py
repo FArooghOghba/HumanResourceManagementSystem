@@ -8,7 +8,10 @@ from src.hr_management_system.departments.models import Department, Position
 def get_departments() -> Optional[QuerySet['Department']]:
 
     """
+    Retrieve all Department records from the database.
 
+    Returns:
+        Optional[QuerySet[Department]]: A QuerySet of Department objects.
     """
 
     departments = Department.objects()
