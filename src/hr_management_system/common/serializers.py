@@ -1,64 +1,161 @@
 from rest_framework import serializers
-from mongoengine import fields as me_fields  # Renamed to avoid conflict
+from mongoengine import fields
+from bson import ObjectId
 
 
-class MongoModelSerializer(serializers.Serializer):
+class ObjectIdField(serializers.Field):
 
     """
-    A base serializer that dynamically maps fields from a MongoEngine model.
-    This mimics DRF's ModelSerializer but without needing django-rest-framework-mongoengine.
+    Custom serializer field to handle MongoDB ObjectId.
+    Converts ObjectId to string for output and validates/converts string back to ObjectId for input.
     """
 
-    def __init__(self, instance=None, data=None, **kwargs):
-        if instance is not None and not isinstance(instance, self.Meta.model):
-            raise TypeError(f"Expected instance of {self.Meta.model.__name__}, got {type(instance).__name__}")
-        super().__init__(data=data, **kwargs)
+    def to_representation(self, value):
+        """Convert ObjectId to string."""
 
-    @classmethod
-    def get_fields(cls) -> dict:
+        return str(value)
 
-        """
-        Dynamically generates serializer fields from the MongoEngine model fields.
+    def to_internal_value(self, data):
+        """Convert string to ObjectId, with validation."""
+        try:
+            return ObjectId(data)
+        except Exception:
+            raise serializers.ValidationError('Invalid ObjectId')
 
-        Returns:
-            dict: A mapping of field names to serializer fields.
-        """
 
-        model = cls.Meta.model
-        serializer_fields = {}
+class MongoDocumentSerializer(serializers.Serializer):
 
-        for field_name, model_field in model._fields.items():
-            if isinstance(model_field, (me_fields.StringField, me_fields.EmailField)):
-                serializer_fields[field_name] = serializers.CharField()
-            elif isinstance(model_field, me_fields.IntField):
-                serializer_fields[field_name] = serializers.IntegerField()
-            elif isinstance(model_field, me_fields.BooleanField):
-                serializer_fields[field_name] = serializers.BooleanField()
-            elif isinstance(model_field, me_fields.DateTimeField):
-                serializer_fields[field_name] = serializers.DateTimeField()
-            elif isinstance(model_field, me_fields.ReferenceField):
-                # For related objects, represent as a primary key.
-                serializer_fields[field_name] = serializers.PrimaryKeyRelatedField(read_only=True)
-            else:
-                # Fallback: use CharField for unknown field types
-                serializer_fields[field_name] = serializers.CharField()
+    """
+    Base serializer for MongoEngine documents.
 
-        return serializer_fields
+    This serializer provides automatic field mapping between MongoEngine documents
+    and DRF serializers. It handles common MongoDB fields (id, created_at, updated_at)
+    and supports nested documents, reference fields, and list fields.
 
-    def to_representation(self, instance) -> dict:
+    Usage:
+        class MyDocumentSerializer(MongoDocumentSerializer):
+            class Meta:
+                model = MyDocument
+                fields = ('id', 'field1', 'field2', ...)
+    """
+
+    def __init__(self, *args, **kwargs):
 
         """
-        Convert a model instance into a dictionary of primitive data types.
+        Initialize the serializer and set up field mapping.
+        Only includes fields that are explicitly declared in Meta.fields.
+        """
+
+        super().__init__(*args, **kwargs)
+        if hasattr(self, 'Meta') and hasattr(self.Meta, 'model'):
+            model = self.Meta.model
+            declared_fields = getattr(self.Meta, 'fields', None)
+
+            # Only add these fields if they're explicitly declared in Meta.fields
+            if 'id' in declared_fields:
+                self.fields['id'] = ObjectIdField(read_only=True)
+            if 'created_at' in declared_fields:
+                self.fields['created_at'] = serializers.DateTimeField(read_only=True)
+            if 'updated_at' in declared_fields:
+                self.fields['updated_at'] = serializers.DateTimeField(read_only=True)
+
+            # Add other model fields
+            for field_name in declared_fields:
+                if field_name not in ['id', 'created_at', 'updated_at'] and field_name not in self.fields:
+                    model_field = model._fields.get(field_name)
+                    if model_field:
+                        self.fields[field_name] = self._create_field_for_mongo_type(model_field)
+
+    def _create_field_for_mongo_type(self, model_field):
+
+        """
+        Map MongoEngine field types to DRF serializer fields.
 
         Args:
-            instance: The MongoEngine model instance.
+            model_field: MongoEngine field instance
 
         Returns:
-            dict: A dictionary representation of the instance.
+            DRF serializer field instance
         """
 
-        data = {}
-        for field_name, serializer_field in self.get_fields().items():
-            # Use getattr to fetch field value; if not found, use None.
-            data[field_name] = getattr(instance, field_name, None)
-        return data
+        # Map MongoEngine field types to DRF serializer fields
+        field_mapping = {
+            fields.StringField: serializers.CharField,
+            fields.IntField: serializers.IntegerField,
+            fields.FloatField: serializers.FloatField,
+            fields.BooleanField: serializers.BooleanField,
+            fields.DateTimeField: serializers.DateTimeField,
+            fields.ReferenceField: self._get_reference_serializer,
+            fields.ListField: self._get_list_serializer,
+            fields.DictField: serializers.DictField,
+        }
+
+        field_class = field_mapping.get(type(model_field), serializers.CharField)
+
+        # Handle special cases for reference and list fields
+        if field_class == self._get_reference_serializer:
+            return field_class(model_field)
+        elif field_class == self._get_list_serializer:
+            return field_class(model_field)
+
+        # Set up field kwargs (e.g., required)
+        field_kwargs = {}
+        if hasattr(model_field, 'required'):
+            field_kwargs['required'] = model_field.required
+
+        return field_class(**field_kwargs)
+
+    def _get_reference_serializer(self, model_field):
+
+        """
+        Create a serializer for referenced documents (foreign key relationships).
+
+        Args:
+            model_field: MongoEngine ReferenceField instance
+
+        Returns:
+            Serializer instance for the referenced document
+        """
+
+        # Handle ReferenceField by creating a nested serializer
+        referenced_model = model_field.document_type
+
+        class DynamicDocumentSerializer(MongoDocumentSerializer):
+            class Meta:
+                model = referenced_model
+
+        return DynamicDocumentSerializer()
+
+    def _get_list_serializer(self, model_field):
+
+        """
+        Create a serializer for list fields.
+
+        Args:
+            model_field: MongoEngine ListField instance
+
+        Returns:
+            ListField serializer with appropriate child serializer
+        """
+
+        # Handle ListField by creating a list serializer
+        field = self._create_field_for_mongo_type(model_field.field)
+        return serializers.ListField(child=field)
+
+    def create(self, validated_data):
+
+        """Create a new document instance."""
+
+        model_class = self.Meta.model
+        instance = model_class(**validated_data)
+        instance.save()
+        return instance
+
+    def update(self, instance, validated_data):
+
+        """Update an existing document instance."""
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
