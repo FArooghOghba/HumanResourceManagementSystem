@@ -23,7 +23,14 @@ class InputDepartmentSerializer(serializers.Serializer):
         }
     """
 
-    code = serializers.CharField(max_length=10)
+    code = serializers.RegexField(
+        regex=r'^[A-Z0-9\-]+$',
+        required=True,
+        max_length=10,
+        error_messages={
+            'invalid': 'Only uppercase letters, numbers and hyphens allowed.'
+        }
+    )
     name = serializers.CharField(max_length=100)
 
 
@@ -112,8 +119,8 @@ class OutputPositionSerializer(MongoDocumentSerializer):
         }
     """
 
-    department = OutputDepartmentSerializer
+    department = OutputDepartmentSerializer(read_only=True)
 
     class Meta:
         model = Position
-        fields = ('id', 'created_at', 'title', 'description', 'is_active')
+        fields = ('id', 'created_at', 'title', 'description', 'department', 'is_active')
